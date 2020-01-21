@@ -1,0 +1,480 @@
+<!doctype html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <title>static space</title>
+   <style>
+      html, body {
+         background: black;
+         overflow: hidden;
+         width: 100%;
+         height: 100%;
+         margin: 0;
+         padding: 0;
+      }
+      #renderCanvas {
+         width: 100%;
+         height: 100%;
+         touch-action: none;
+      }
+   </style>
+
+   //load scripts
+   <script src = "babylonMaster/babylon.js"></script>
+   <script src="babylonMaster/hand.js"></script>
+   <script src="babylonMaster/cannon.js"></script>
+
+</head>
+<body>
+
+   <canvas id="renderCanvas"></canvas>
+//new script for js
+   <script type="text/javascript">
+
+ //--------INFO-----------------------------------------------------
+
+ //headphones and fullscreen are recommended
+
+ /*
+ static space is an interactive experiment in virtual environments, radio, and
+ (one day) communication. the concept is a prototype for an online radio station
+ where listeners are dropped into the landscape of the "station" where they are free
+ to explore various different stations scattered amongst the landscape. The stations
+ can be navigated by ear and will hopefully one day have tags such as the station's
+ name "eno.fm". One day I also hope to add a communicational aspect where users can
+ chat with each other and possibly exchange ideas on the music. Each station is
+ represented by an object, some are spheres, some boxes. The rotate around a center
+ axis marked by the concrete block. They cannot be initially seen as they are located in fog
+ so they have to explore. A listener can navigate back to the center by
+ following the wireframe sculpture. The center block also controls the environmental
+ lighting allowing for different moods. At the moment the "stations" are not live feeds
+ but clips.
+ */
+
+ //----SCRIPT-------------------------------------------------------
+
+//function to create canvas (taken from bablyon.js library)
+var create = function (scene) {
+    var canvas = new BABYLON.ScreenSpaceCanvas2D(scene, {
+        id: "ScreenCanvas",
+        size: new BABYLON.Size(300, 100),
+        backgroundFill: "#4040408F",
+        backgroundRoundRadius: 50,
+        children: [
+            new BABYLON.Text2D("Hello World!", {
+                id: "text",
+                marginAlignment: "h: center, v:center",
+                fontName: "20pt Arial",
+            })
+        ]
+    });
+    return canvas;
+};
+
+//-- CANVAS ----------------------------------------------
+
+      // Get the canvas element from our HTML below
+      var canvas = document.querySelector("#renderCanvas");
+      // Load the BABYLON 3D engine
+      var engine = new BABYLON.Engine(canvas, true);
+
+      // -------------------------------------------------------------
+      // Here begins a function that we will 'call' just after it's built
+      var createScene = function () {
+
+
+         //--SCENE -----------------------------------------------------
+
+         // Now create a basic Babylon Scene object
+         var scene = new BABYLON.Scene(engine);
+
+         //creates a fog
+         scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+         //adjusts density
+         scene.fogDensity = 0.03;
+		  //fog color = purply black
+         scene.fogColor = new BABYLON.Color3(0, 0, .05);
+
+         //preps variable for use later
+         var soundsReady;
+
+         //tracks mouse cursor while engine is running - camera follows mouse
+         engine.isPointerLock = true;
+
+
+ //--------------CAMERA & LIGHT------------------------------------------------------------
+
+         // creates and positions a free camera
+         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 2, -25), scene);
+         // This targets the camera to scene origin
+         camera.setTarget(BABYLON.Vector3.Zero());
+
+         //attacthes user control of camera
+         camera.attachControl(canvas, true);
+
+         // This creates a light aiming at the camera providing light to user
+         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+         // Dim the light a small amount
+         light.intensity = .5;
+
+
+
+
+//-------------- OBJECTS --------------------------------------------------------------
+
+		  //create sphere...
+         var sphere1 = BABYLON.Mesh.CreateSphere("sphere1", 40, 2, scene);
+         // Move the sphere upward 1/2 its height
+         sphere1.position.y = 1;
+         //new material for the sphere
+         materialSphere = new BABYLON.StandardMaterial("texture1", scene);
+         materialSphere.emissivecolor = new BABYLON.Color3(0, 0, 0);
+         materialSphere.emissivecolor = new BABYLON.Color3(0, 0, 0);
+          materialSphere.diffuseTexture = new BABYLON.Texture("textures/chrome.jpg", scene);
+
+         materialSphere.diffuseTexture = new BABYLON.Texture("textures/chrome.jpg", scene);
+         sphere1.material = materialSphere;
+
+         //create sphere...
+        var sphere2 = BABYLON.Mesh.CreateSphere("sphere2", 40, 4, scene);
+         // Move the sphere to players height
+         sphere2.position.y = 3;
+         sphere2.position.x = 10;
+         //new sphere material (wireframe)...
+         materialSphere2 = new BABYLON.StandardMaterial("texture2", scene);
+         //wireframe color
+          materialSphere2.emissivecolor = new BABYLON.Color3(1, 1, 1);
+          //show wireframe
+         materialSphere2.wireframe = true;
+         //assigns material to sphere
+         sphere2.material = materialSphere2;
+
+          //create sphere...
+         var sphere3 = BABYLON.Mesh.CreateSphere("sphere3", 40, 2, scene);
+         // Move the sphere upward to be at players height
+         sphere3.position.y = 1;
+          sphere3.position.x = -10;
+
+           //Creation of material (copper shell)
+    var materialSphere3 = new BABYLON.StandardMaterial("texture3", scene);
+    //adds texture to its emmissive property
+    materialSphere3.emissiveTexture = new BABYLON.Texture("Habitat/textures/copper.jpg", scene);
+    //adds white to underlying sphere brightening texture
+     materialSphere3.color = new BABYLON.Color3(1, 1, 1);
+      //adds texture to its diffuse property
+    materialSphere3.diffuseTexture = new BABYLON.Texture("textures/copper.jpg", scene);
+
+         //assigns material to sphere
+           sphere3.material = materialSphere3;
+
+        //create sphere...
+         var sphere4 = BABYLON.Mesh.CreateSphere("sphere4", 40, 2, scene);
+         // Move the sphere upward to players height
+         sphere4.position.y = 1;
+         sphere4.position.x = -5;
+
+          //Creation of material (fresnel bubble)...
+     materialSphere4 = new BABYLON.StandardMaterial("texture4", scene);
+     //reflection material
+    materialSphere4.reflectionTexture = new BABYLON.CubeTexture("textures/sunny/TropicalSunnyDay", scene);
+   //sphere diffuse color
+    materialSphere4.diffuseColor = new BABYLON.Color3(0, 0, 0);
+    //sphere emmissive color
+    materialSphere4.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+    //opacity level (low)
+    materialSphere4.alpha = 0.2;
+    //light power
+    materialSphere4.specularPower = 16;
+
+    // Fresnel parameters...
+    materialSphere4.reflectionFresnelParameters = new BABYLON.FresnelParameters();
+    materialSphere4.reflectionFresnelParameters.bias = 0.1;
+
+    materialSphere4.emissiveFresnelParameters = new BABYLON.FresnelParameters();
+    materialSphere4.emissiveFresnelParameters.bias = 0.6;
+    materialSphere4.emissiveFresnelParameters.power = 4;
+    materialSphere4.emissiveFresnelParameters.leftColor = BABYLON.Color3.White();
+    materialSphere4.emissiveFresnelParameters.rightColor = BABYLON.Color3.Black();
+
+    materialSphere4.opacityFresnelParameters = new BABYLON.FresnelParameters();
+    materialSphere4.opacityFresnelParameters.leftColor = BABYLON.Color3.White();
+    materialSphere4.opacityFresnelParameters.rightColor = BABYLON.Color3.Black();
+
+//applies material to sphere
+    sphere4.material = materialSphere4;
+
+//-----------------------------
+
+//creates box (home base)...
+ var box1 = BABYLON.Mesh.CreateBox("box", 10.0, scene);
+//box position (ceneter)
+         box1.position = new BABYLON.Vector3(0, 0, 0);
+         //box texture
+         materialBox  = new BABYLON.StandardMaterial("texturebox", scene);
+         //texture mapped to box (concrete)
+         materialBox.diffuseTexture = new BABYLON.Texture("textures/concrete.jpg", scene);
+         //assign material to box
+         box1.material = materialBox;
+         //change y scaling for more rectangular shape
+         box1.scaling.y = 1.5;
+
+
+         // create square of concrete...
+         var box2 = BABYLON.Mesh.CreateBox("box2", 2.0, scene);
+         //centers box
+         box2.position = new BABYLON.Vector3(10, 3, 0);
+         //new box material (concrete)...
+         materialBox2  = new BABYLON.StandardMaterial("texturebox", scene);
+         //assigns concrete texture
+         materialBox2.diffuseTexture = new BABYLON.Texture("textures/concrete.jpg", scene);
+        //assigns material to box
+         box2.material = materialBox2;
+
+
+1
+//------------------------------------------------------------------
+         //creates skybox via box...
+         var skybox = BABYLON.Mesh.CreateBox("skybox", 10000.0, scene);
+         //positions box in center
+         skybox.position = new BABYLON.Vector3(0, 0, 0);
+         //new material
+       var skyMaterial = new BABYLON.StandardMaterial("mat1", scene);
+       //black
+        skyMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        //no material on back, allows skyline to appear black
+          skyMaterial.backFaceCulling = false;
+          //assign material to skybox
+          skybox.material = skyMaterial;
+
+//-------------------------------------------------------------------
+
+          //Creation of a plane for ground
+           var ground = BABYLON.Mesh.CreatePlane("ground", 12000, scene);
+           //horizon level
+           ground.position.y = 0;
+		  //rotates plane to be horizontal
+            ground.rotation.x = Math.PI / 2;
+
+        //material for ground
+           ground.material = new BABYLON.StandardMaterial("texturePlane", scene);
+           //create static texture on plane
+		  ground.material.diffuseTexture = new BABYLON.Texture("textures/static.png", scene);
+           ground.material.alpha = .99;
+		  //repeat texture x times
+           ground.material.diffuseTexture.uScale = 5000.0;//Repeat 5 times on the Vertical Axes
+           ground.material.diffuseTexture.vScale = 5000.0;//Repeat 5 times on the Horizontal Axes
+		  //Always show the front and the back of an element = false
+            ground.material.backFaceCulling = false;
+
+
+//-------------------------
+//home geometric statue - guides use back to center through fog
+
+            //creates plane...
+           var plane1 = BABYLON.Mesh.CreatePlane("plane1", 10, scene);
+           //plane position
+           plane1.position.y = 3;
+           plane1.position.x = 20;
+		  //rotates plane to be horizontal
+            plane1.rotation.x = Math.PI / 2;
+            //shows bounding box - travels through fog
+            plane1.showBoundingBox = true;
+
+            //creates plane...
+            var plane2b = BABYLON.Mesh.CreatePlane("plane2", 10, scene);
+            //plane position
+          plane2b.position.y = 2.99;
+          plane2b.position.x = 20;
+		  //rotates plane to be angled
+            plane2b.rotation.x = (15*Math.PI)/12;
+          //shows bounding box - travels through fog
+            plane2b.showBoundingBox = true;
+
+
+            var plane3 = BABYLON.Mesh.CreatePlane("plane3", 12, scene);
+            //lane position
+           plane3.position.y = 5;
+           plane3.position.x = 21;
+           plane3.position.z = 5;
+		  //rotates plane to be horizontal
+            plane3.rotation.x = Math.PI /2;
+            // //shows bounding box - travels through fog
+            plane3.showBoundingBox = true;
+
+ //-------------------------------------------
+
+
+//draws billboard
+//create plane...
+	var billboard = BABYLON.Mesh.CreatePlane("billboard", 20, scene, false);
+	//set plane to billboard mode, follows user
+	billboard.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+	//new material...
+	billboard.material = new BABYLON.StandardMaterial("billboard", scene);
+	//position, in sky
+	billboard.position = new BABYLON.Vector3(-15, 15, 25);
+	//scaling
+	billboard.scaling.y = 0.5;
+
+//new texture for plane using html (follows camera)...
+	var billboardTexture = new BABYLON.DynamicTexture("dynamic texture", 512, scene, true);
+//assigns created texture to diffuse
+	billboard.material.diffuseTexture = billboardTexture;
+	//sets emmisve color so that the player can see the board, reduces specular color
+	billboard.material.specularColor = new BABYLON.Color3(0, 0, 0);
+	billboard.material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+	//only one side visible (since follows user)
+	billboard.material.backFaceCulling = false;
+
+//draws text on plane...
+//set font type, size, color...
+	billboardTexture.drawText("eno.fm", null, 140, "bold 120px courier new", "white", "#0000AA");
+
+
+
+//------------------ ACTIONS ---------------------------------------------------------
+
+		  //interaction with center object...
+		  //turns on/off light to change mood
+		  var onClick = function (mesh, color, light) {
+        var goToColorAction = new BABYLON.InterpolateValueAction(BABYLON.ActionManager.OnPickTrigger, light, "diffuse", color, 1000, null, true);
+
+			  //new mesh action (mesh clicked)
+		  mesh.actionManager = new BABYLON.ActionManager(scene);
+
+
+
+		  mesh.actionManager.registerAction(
+		      //when clicked, turn light to black, then turn white again on next click
+            new BABYLON.InterpolateValueAction(BABYLON.ActionManager.OnPickTrigger, light, "diffuse", BABYLON.Color3.Black(), 1000)).then(new BABYLON.CombineAction(BABYLON.ActionManager.NothingTrigger, [
+                goToColorAction,
+
+            ]));
+
+    }
+
+   //calls function onclick, assigns white light...
+   onClick(box1, BABYLON.Color3.White(), light);
+
+
+
+//------------------- COLLISIONS ----------------------------------------------------
+
+
+    //Set gravity for the player
+    scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+ // Enables collision
+    scene.collisionsEnabled = true;
+
+    //applies collisions and gravity to the active camera
+    camera.checkCollisions = true;
+    camera.applyGravity = true;
+
+    //Set the ellipsoid around the camera for collision framing
+    camera.ellipsoid = new BABYLON.Vector3(1, 1, 1);
+
+    //which meshs will be considered for collison
+    ground.checkCollisions = true;
+    sphere1.checkCollisions = true;
+    sphere2.checkCollisions = true;
+      sphere3.checkCollisions = true;
+    sphere4.checkCollisions = true;
+    box1.checkCollisions = true;
+    box2.checkCollisions = true;
+
+
+//creates a variable for the hd rendering pipeline
+var hdr = new BABYLON.HDRRenderingPipeline("hdr", scene, 1.0, null, [camera]);
+
+//properties of the pipeline...
+    hdr.brightThreshold = 0.5;
+    hdr.minimumLuminance = 1.0;
+    hdr.luminanceDecreaseRate = 0.5;
+    hdr.luminanceIncreaserate = 0.5;
+    hdr.exposure = 0.8;
+
+//----------- ANIMATIONS --------------------------------------------------------------
+
+//counter variables
+ var alpha = 0;
+ var alpha2 = 0;
+ var alpha3=0;
+ var alpha4 = 0;
+
+ //function for animation
+    scene.registerBeforeRender(function () {
+
+        //sin&cos waves allow the shapes to orbit the center
+        sphere3.position.x = 180 * Math.cos(alpha);
+        sphere3.position.y = 2;
+        sphere3.position.z = 130 * Math.sin(alpha);
+
+          sphere2.position.x = 40 * Math.cos(alpha2);
+        sphere2.position.y = 2;
+        sphere2.position.z = 40 * Math.sin(alpha2);
+
+         sphere4.position.x = -100* Math.cos(alpha3);
+        sphere4.position.y = 2;
+        sphere4.position.z = 100*Math.sin(alpha3);
+
+        box2.position.x = -240 * Math.cos(alpha3);
+        box2.position.y = 2;
+        box2.position.z = 240 * Math.sin(alpha3);
+
+        //controls various speed of rotation via increasing wave angle
+        alpha3 += 0.0001;
+        alpha2 += 0.0001;
+        alpha += 0.0001;
+        alpha4 += 0.0001;
+    });
+
+
+//------------- SOUNDS ----------------------------------------------------------------
+
+
+    //creates variables for songs associated with objects
+    var dozzy1 = new BABYLON.Sound("dozzy", "sounds/dozzy.mp3", scene, null, { loop: true, autoplay: true });
+    var lns1 = new BABYLON.Sound("eno2", "sounds/lns1.mp3", scene, null, { loop: true, autoplay: true });
+    var vari = new BABYLON.Sound("dozzy", "sounds/vari.mp3", scene, null, { loop: true, autoplay: true });
+    var halo = new BABYLON.Sound("dozzy", "sounds/halo.mp3", scene, null, { loop: true, autoplay: true });
+
+// Sound will now follow the box mesh position
+lns1.attachToMesh(sphere2);
+dozzy1.attachToMesh(sphere4);
+vari.attachToMesh(box2);
+halo.attachToMesh(sphere3);
+
+
+//end scene
+    scene.registerBeforeRender(function () {
+
+    });
+
+
+//-------------------END SCENE--------------------------------------------------
+
+      //returns scene that was just created
+         return scene;
+      };
+
+      // -------------------------------------------------------------
+      // calls scene
+      var scene = createScene();
+
+      // render loop repeatedly renders the scene
+      engine.runRenderLoop(function () {
+         scene.render();
+      });
+
+
+      // Watch for browser/canvas resize events
+      window.addEventListener("resize", function () {
+         engine.resize();
+      });
+
+
+
+
+   </script>
+</body>
+</html>
